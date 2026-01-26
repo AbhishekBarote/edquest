@@ -14,7 +14,7 @@ import '@xyflow/react/dist/style.css';
 import { StartNode, LLMNode, ConditionNode, ToolNode, CodeNode, EndNode } from './components/nodes/CustomNodes';
 import CustomEdge from './components/edges/CustomEdge';
 import { NodeContext } from './NodeContext';
-import { Play, Box, Layout, GitBranch, Globe, Code, CheckCircle, MessageSquare, Cpu, Share2 } from 'lucide-react';
+import { Play, Box, Layout, GitBranch, Globe, Code, CheckCircle, MessageSquare, Cpu, Share2, Terminal } from 'lucide-react';
 
 // --- Error Boundary ---
 class ErrorBoundary extends Component {
@@ -142,6 +142,63 @@ const Sidebar = () => {
   );
 };
 
+const OutputPanel = ({ logs }) => {
+  return (
+    <aside className="glass-panel" style={{
+      width: '320px',
+      padding: '1.5rem',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.5rem',
+      margin: '1rem 1rem 1rem 0',
+      borderLeft: '1px solid var(--border-color)',
+      overflowY: 'auto',
+      background: 'rgba(15, 23, 42, 0.6)'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+        <Terminal size={20} color="#10b981" />
+        <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Run Output</h2>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {logs.length === 0 ? (
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center', marginTop: '2rem' }}>
+            Run the workflow to see output here.
+          </div>
+        ) : (
+          logs.map((log, index) => (
+            <div key={index} style={{
+              background: 'rgba(255,255,255,0.03)',
+              borderRadius: '8px',
+              padding: '10px',
+              borderLeft: `3px solid ${log.status === 'completed' ? '#10b981' : '#ef4444'}`
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e2e8f0' }}>{log.nodeId}</span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>
+                  {new Date().toLocaleTimeString()}
+                </span>
+              </div>
+              {log.output && (
+                <pre style={{
+                  margin: 0,
+                  fontSize: '0.7rem',
+                  fontFamily: 'monospace',
+                  color: '#94a3b8',
+                  whiteSpace: 'pre-wrap',
+                  overflowX: 'auto'
+                }}>
+                  {typeof log.output === 'object' ? JSON.stringify(log.output, null, 2) : log.output}
+                </pre>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </aside>
+  );
+};
+
 const FlowBuilder = () => {
   const reactFlowWrapper = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -149,6 +206,7 @@ const FlowBuilder = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [sysQuery, setSysQuery] = useState("Artificial Intelligence");
   const [isSharedMode, setIsSharedMode] = useState(false);
+  const [executionLogs, setExecutionLogs] = useState([]);
   const { screenToFlowPosition, fitView } = useReactFlow();
 
   // Load Workflow from URL if present
@@ -256,6 +314,7 @@ const FlowBuilder = () => {
 
   const runFlow = async () => {
     setIsRunning(true);
+    setExecutionLogs([]);
     setNodes(nds => nds.map(n => ({
       ...n,
       className: '',
@@ -299,6 +358,10 @@ const FlowBuilder = () => {
           if (!line.trim()) continue;
           try {
             const data = JSON.parse(line);
+
+            if (data.status === 'completed' || data.status === 'failed') {
+              setExecutionLogs(prev => [...prev, { nodeId: data.node_id, status: data.status, output: data.output }]);
+            }
 
             if (data.status === 'running') {
               fitView({
@@ -471,6 +534,7 @@ const FlowBuilder = () => {
               />
             </ReactFlow>
           </div>
+          <OutputPanel logs={executionLogs} />
         </div>
       </div>
     </NodeContext.Provider>
