@@ -1,0 +1,48 @@
+{
+  "nodes": [
+    {
+      "id": "start_1",
+      "type": "start",
+      "data": {
+        "output": {}
+      },
+      "position": null
+    },
+    {
+      "id": "llm_1",
+      "type": "llm",
+      "data": {
+        "model": "gemini-2.5-flash",
+        "prompt": "Write a short poem about {{sys.query}}."
+      },
+      "position": null
+    },
+    {
+      "id": "end_1",
+      "type": "end",
+      "data": {
+        "output_var": "{{llm_1.text}}"
+      },
+      "position": null
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "start_1",
+      "target": "llm_1",
+      "sourceHandle": null,
+      "targetHandle": null
+    },
+    {
+      "id": "e2",
+      "source": "llm_1",
+      "target": "end_1",
+      "sourceHandle": null,
+      "targetHandle": null
+    }
+  ],
+  "inputs": {
+    "query": "Artificial Intelligence"
+  }
+}
