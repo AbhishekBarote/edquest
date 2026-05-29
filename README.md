@@ -49,7 +49,11 @@ A visual, drag-and-drop node builder for creating AI applications.
 3. Connect **Model Source -> Output Target**.
 4. Enter text in Prompt Block.
 5. Click **Run Flow**.
+
 Loom Video Link
 https://drive.google.com/file/d/1HZxDgKPttI4XuU_lQVXkQjjiY5r4rOT5/view?usp=sharing
+
+<img width="1919" height="924" alt="image" src="https://github.com/user-attachments/assets/05f1dd61-821d-4054-9041-96c2c90f1021" />
+
 
 
